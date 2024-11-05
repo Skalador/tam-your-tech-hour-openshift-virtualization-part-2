@@ -1,0 +1,69 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: create-mysqldump-from-database-vm
+  namespace: pipelines-demo
+spec:
+  tasks:
+  - name: wait-for-vmi-status
+    params:
+    - name: vmiName
+      value: database-vm
+    - name: vmiNamespace
+      value: ""
+    - name: successCondition
+      value: status.phase == Running
+    - name: failureCondition
+      value: status.phase in (Failed, Unknown)
+    taskRef:
+      kind: Task
+      name: wait-for-vmi-status
+  - name: dump-database
+    params:
+    - name: vmName
+      value: database-vm
+    - name: vmNamespace
+      value: ""
+    - name: secretName
+      value: database-vm-private-key
+    - name: command
+      value:
+      - /usr/bin/mysqldump
+    - name: args
+      value:
+      - -u sample_user
+      - -ppassword123
+      - sample_db > /mnt/mysql-dump/sample_db_dump.sql
+    - name: script
+      value: ""
+    runAfter:
+    - wait-for-vmi-status
+    taskRef:
+      kind: Task
+      name: execute-in-vm
+  - name: verify-mysqldump
+    params:
+    - name: vmName
+      value: database-vm
+    - name: vmNamespace
+      value: ""
+    - name: secretName
+      value: database-vm-private-key
+    - name: command
+      value: []
+    - name: args
+      value: []
+    - name: script
+      value: |-
+        FILE_PATH="/mnt/mysql-dump/sample_db_dump.sql"
+        if [[ -f "$FILE_PATH" && $(stat --printf="%s" "$FILE_PATH") -gt 0 ]]; then
+          echo "File exists and size is greater than zero: $FILE_PATH"
+        else
+          echo "File does not exist or is empty: $FILE_PATH"
+          exit 1
+        fi
+    runAfter:
+    - dump-database
+    taskRef:
+      kind: Task
+      name: execute-in-vm

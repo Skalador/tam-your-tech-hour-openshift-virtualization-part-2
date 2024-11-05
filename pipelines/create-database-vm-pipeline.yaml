@@ -1,0 +1,141 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  generation: 5
+  name: create-database-vm
+  namespace: pipelines-demo
+spec:
+  tasks:
+  - name: generate-ssh-keys
+    params:
+    - name: privateKeyConnectionOptions
+      value:
+      - user:fedora
+      - disable-strict-host-key-checking:true
+    - name: publicKeySecretName
+      value: database-vm-public-key
+    - name: privateKeySecretName
+      value: database-vm-private-key
+    taskRef:
+      kind: Task
+      name: generate-ssh-keys
+  - name: create-vm-from-manifest
+    params:
+    - name: manifest
+      value: |
+        apiVersion: kubevirt.io/v1
+        kind: VirtualMachine
+        metadata:
+          name: database-vm
+        spec:
+          running: true
+          dataVolumeTemplates:
+          - metadata:
+              name: database-vm-ds-fedora
+            spec:
+              sourceRef:
+                kind: DataSource
+                name: fedora
+                namespace: openshift-virtualization-os-images
+              storage:
+                resources: {}
+          - metadata:
+              name: mysql-dump-disk
+            spec:
+              source:
+                blank: {}
+              storage:
+                resources:
+                  requests:
+                    storage: 1Gi
+          template:
+            metadata:
+              labels:
+                vm-name: database-vm
+                vm: demo-vm
+            spec:
+              terminationGracePeriodSeconds: 180
+              accessCredentials:
+                - sshPublicKey:
+                    source:
+                      secret:
+                        secretName: $(tasks.generate-ssh-keys.results.publicKeySecretName)
+                    propagationMethod:
+                      configDrive: {}
+              domain:
+                cpu:
+                  cores: 1
+                  sockets: 1
+                  threads: 1
+                devices:
+                  rng: {}
+                memory:
+                  guest: 1024M
+              volumes:
+              - dataVolume:
+                  name: database-vm-ds-fedora
+                name: database-vm-ds-fedora
+              - dataVolume:
+                  name: mysql-dump-disk
+                name: mysqldumpdisk
+              - cloudInitConfigDrive:
+                  userData: |-
+                    #cloud-config
+                    user: fedora
+                    password: fedora
+                    chpasswd: { expire: False }
+                    runcmd:
+                      - sudo dnf update
+                      - sudo dnf install mariadb-server -y
+                      - sudo systemctl enable mariadb
+                      - sudo systemctl start mariadb
+                      - |
+                        mysql -e "UPDATE mysql.user SET Password=PASSWORD('rootpassword') WHERE User='root';"
+                        mysql -e "DELETE FROM mysql.user WHERE User='';"
+                        mysql -e "DROP DATABASE IF EXISTS test;"
+                        mysql -e "DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';"
+                        mysql -e "FLUSH PRIVILEGES;"
+                      - |
+                        mysql -u root -prootpassword -e "CREATE DATABASE sample_db;"
+                        mysql -u root -prootpassword -e "CREATE USER 'sample_user'@'localhost' IDENTIFIED BY 'password123';"
+                        mysql -u root -prootpassword -e "GRANT ALL PRIVILEGES ON sample_db.* TO 'sample_user'@'localhost';"
+                        mysql -u root -prootpassword -e "FLUSH PRIVILEGES;"
+                      - |
+                        mysql -u root -prootpassword -D sample_db -e "
+                        CREATE TABLE employees (
+                          id INT PRIMARY KEY AUTO_INCREMENT,
+                          name VARCHAR(100),
+                          position VARCHAR(100),
+                          employee_id VARCHAR(10)
+                        );"
+                        mysql -u root -prootpassword -D sample_db -e "
+                        INSERT INTO employees (name, position, employee_id) VALUES
+                        ('Alice', 'Manager', 'M010'),
+                        ('Bob', 'Developer', 'D001'),
+                        ('Carol', 'Developer', 'D002'),
+                        ('Dave', 'Sales', 'S001');"
+                      - sudo mkfs.ext4 /dev/sdb
+                      - sudo mkdir /mnt/mysql-dump
+                      - sudo mount /dev/sdb /mnt/mysql-dump
+                      - sudo chown fedora:fedora /mnt/mysql-dump
+                name: cloudinitdisk
+    runAfter:
+    - generate-ssh-keys
+    taskRef:
+      kind: Task
+      name: create-vm-from-manifest
+  - name: wait-for-vmi-status
+    params:
+    - name: vmiName
+      value: $(tasks.create-vm-from-manifest.results.name)
+    - name: vmiNamespace
+      value: ""
+    - name: successCondition
+      value: status.phase == Running
+    - name: failureCondition
+      value: status.phase in (Failed, Unknown)
+    runAfter:
+    - create-vm-from-manifest
+    taskRef:
+      kind: Task
+      name: wait-for-vmi-status

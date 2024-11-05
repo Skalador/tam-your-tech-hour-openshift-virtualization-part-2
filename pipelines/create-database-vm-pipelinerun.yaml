@@ -1,0 +1,12 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: create-database-vm-
+  namespace: pipelines-demo
+spec:
+  pipelineRef:
+    name: create-database-vm
+  taskRunTemplate:
+    serviceAccountName: pipeline
+  timeouts:
+    pipeline: 1h0m0s
