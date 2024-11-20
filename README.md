@@ -63,9 +63,7 @@ oc patch console.operator cluster --type='json' -p='[{"op": "add", "path": "/spe
 
 ## Using OpenShift GitOps with VMs
 
-This part of the demo will create four `namespaces`
-- `dev-demo-db`  -> Database for development
-- `prod-demo-db` -> Database for production
+This part of the demo will create two `namespaces`
 - `dev-demo-vm`  -> VMs for development
 - `prod-demo-vm` -> VMs for production
 
@@ -73,19 +71,7 @@ These `namespaces` (and other resources) are deployed via [OpenShift GitOps](htt
 The overlay structure is as follows:
 ```sh
 tree applicationsets 
-.
-├── demo-db
-│   ├── applicationset-demo-db.yaml
-│   └── kustomize
-│       ├── base
-│       │   ├── deployment.yaml
-│       │   ├── kustomization.yaml
-│       │   └── service.yaml
-│       └── overlays
-│           ├── dev
-│           │   └── kustomization.yaml
-│           └── prod
-│               └── kustomization.yaml
+applicationsets
 └── demo-vm
     ├── applicationset-demo-vm.yaml
     └── kustomize
@@ -102,8 +88,6 @@ tree applicationsets
                 └── kustomization.yaml
 ```
 
-The database `namespaces` are pretty similar, as they just have a `Deployment` and `Service`, each.
-
 The VM `namespaces` hold the following base configuration:
 - Virtual machine 1 -> First web server VM
 - Virtual machine 2 -> Second web server VM
@@ -119,13 +103,10 @@ oc get secret/openshift-gitops-cluster -n openshift-gitops -o jsonpath='{.data.a
 
 # Create ApplicationSets
 oc apply -f applicationsets/demo-vm/applicationset-demo-vm.yaml
-oc apply -f applicationsets/demo-db/applicationset-demo-db.yaml
 
 # Apply permissions for namespaces
 oc adm policy add-role-to-user admin system:serviceaccount:openshift-gitops:openshift-gitops-argocd-application-controller -n dev-demo-vm
 oc adm policy add-role-to-user admin system:serviceaccount:openshift-gitops:openshift-gitops-argocd-application-controller -n prod-demo-vm
-oc adm policy add-role-to-user admin system:serviceaccount:openshift-gitops:openshift-gitops-argocd-application-controller -n dev-demo-db
-oc adm policy add-role-to-user admin system:serviceaccount:openshift-gitops:openshift-gitops-argocd-application-controller -n prod-demo-db
 ```
 
 [Link to demonstration as GIF](./src/video/deploy_vms_via_git.gif)
