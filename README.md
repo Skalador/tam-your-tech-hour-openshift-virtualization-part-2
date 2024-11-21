@@ -93,7 +93,9 @@ The VM `namespaces` hold the following base configuration:
 - Virtual machine 2 -> Second web server VM
 - `service`         -> Enables the connection to all VMs 
 - `route`           -> Enables HTTP(S) traffic to the VMs via the `service`
-The `namespaces` differ in the overlays, because the development environment `dev-demo-vm` has the second VM stopped, as there is no need for it.
+The `namespaces` differ in the overlays, because the development environment `dev-demo-vm` has the second VM stopped, as there is no need for it. The following drawing should elaborate on the structure:
+
+![GitOps Deployment](./src/img/GitOps.drawio.png)
 
 ### Provision all VMs
 
