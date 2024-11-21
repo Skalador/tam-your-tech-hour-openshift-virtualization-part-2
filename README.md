@@ -161,6 +161,10 @@ mysql -u sample_user -ppassword123 -D sample_db -e "SELECT * from employees;"
 |  4 | Dave  | Sales     | S001        |
 +----+-------+-----------+-------------+
 ```
+
+[Link to demonstration as GIF](./src/video/create_database_vm_pipelines.gif)
+
+
 ### Create a mysqldump via OpenShift Pipelines
 
 ```sh
@@ -172,3 +176,6 @@ pipeline.tekton.dev/create-mysqldump-from-database-vm created
 oc create -f pipelines/create-mysqldump-from-database-vm-pipelinerun.yaml
 pipelinerun.tekton.dev/create-mysqldump-from-database-vm-b5m9p created
 ```
+
+[Link to demonstration as GIF](./src/video/create_mysqldump_pipelines.gif)
+
