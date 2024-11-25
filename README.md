@@ -13,6 +13,9 @@
     - [Provision the setup](#provision-the-setup)
     - [Create database VM via OpenShift Pipelines](#create-database-vm-via-openshift-pipelines)
     - [Create a mysqldump via OpenShift Pipelines](#create-a-mysqldump-via-openshift-pipelines)
+  - [Advanced Networking](#advanced-networking)
+    - [OVN-Kubernetes secondary network using Layer 2](#ovn-kubernetes-secondary-network-using-layer-2)
+    - [OVN-Kubernetes secondary network using localnet](#ovn-kubernetes-secondary-network-using-localnet)
 
 **Disclaimer: All demonstrations as GIFs are linked via hyperlinks at the bottom of each (sub)section to reduce the loading time of the README.**
 
@@ -179,3 +182,20 @@ pipelinerun.tekton.dev/create-mysqldump-from-database-vm-b5m9p created
 
 [Link to demonstration as GIF](./src/video/create_mysqldump_pipelines.gif)
 
+## Advanced Networking
+
+### OVN-Kubernetes secondary network using Layer 2
+
+```sh
+oc new-project vm1
+oc new-project vm2
+oc apply -f networking/layer-2/
+```
+
+### OVN-Kubernetes secondary network using localnet
+
+```sh
+oc new-project webserver1
+oc new-project webserver2
+oc apply -f networking/localnet/
+```

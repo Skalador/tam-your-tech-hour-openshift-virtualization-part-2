@@ -1,0 +1,17 @@
+apiVersion: k8s.cni.cncf.io/v1beta1
+kind: MultiNetworkPolicy
+metadata:
+  annotations:
+    k8s.v1.cni.cncf.io/policy-for: webserver2/localnet-network
+  name: ipblock
+  namespace: webserver2
+spec:
+  ingress:
+  - from:
+    - ipBlock:
+        cidr: 192.168.1.111
+    - ipBlock:
+        cidr: 192.168.1.85
+  podSelector: {}
+  policyTypes:
+  - Ingress

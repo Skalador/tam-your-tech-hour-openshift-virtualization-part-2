@@ -1,0 +1,14 @@
+apiVersion: k8s.cni.cncf.io/v1
+kind: NetworkAttachmentDefinition
+metadata:
+  name: vm2-nad
+  namespace: vm2
+spec:
+  config: |
+    {
+            "cniVersion": "0.4.0", 
+            "name": "my-layer2-network", 
+            "type": "ovn-k8s-cni-overlay", 
+            "topology": "layer2", 
+            "netAttachDefName": "vm2/vm2-nad" 
+    }

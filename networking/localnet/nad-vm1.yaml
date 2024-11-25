@@ -1,0 +1,14 @@
+apiVersion: k8s.cni.cncf.io/v1
+kind: NetworkAttachmentDefinition
+metadata:
+  name: localnet-network
+  namespace: webserver1
+spec:
+  config: |
+    {
+            "cniVersion": "0.4.0", 
+            "name": "localnet224", 
+            "type": "ovn-k8s-cni-overlay", 
+            "topology": "localnet", 
+            "netAttachDefName": "webserver1/localnet-network" 
+    }
