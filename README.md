@@ -26,8 +26,7 @@ Content of the TAM your tech hour webinar about OpenShift Virtualization: `Next-
 ## Webinar facts
 
 - Previous webinar: [Github](https://github.com/Skalador/tam-your-tech-hour-openshift-virtualization)
-- Link to sign up: [Next-level Red Hat OpenShift Virtualization automation and configuration](https://www.redhat.com/en/events/webinar/tam-your-tech/next-level-red-hat-openshift-virtualization-automation-configuration-2024)
-- Link to recording: TBD
+- Link to on-demand recording: [Next-level Red Hat OpenShift Virtualization automation and configuration](https://www.redhat.com/en/events/webinar/tam-your-tech/next-level-red-hat-openshift-virtualization-automation-configuration-2024)
 - Date: December 5, 2024, 10:00 a.m. CEST (UTC+ 1)
 - Contributor: [Amr Elganzory](https://github.com/AmrGanz), [Kevin Niederwanger](https://github.com/Skalador)
 
